@@ -1,0 +1,41 @@
+path {
+    stroke: #266BFF;
+    fill: white;
+    // stroke-width: 3px;
+}
+
+.wrapper {
+    margin: 2rem;
+}
+
+.example {
+    position: relative;
+}
+
+.curry {
+    position: relative;
+    
+    &__point {
+        position: absolute;
+        // top: 40px;
+        // left: 250px; // size / 2 - border size path
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        border: 7px solid white;
+        background: #266BFF;
+        cursor: pointer;
+        box-sizing: border-box;
+        transition: all .3s;
+        transform: translate3d(-50%, 0, 0);
+        
+        &--active {
+            border: 7px solid #266BFF;
+            background-color: white;
+        }
+        
+        &:hover {
+            transform: translate3d(-50%, 0, 0) scale(1.2);
+        }
+    }
+}
