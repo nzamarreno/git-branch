@@ -25,7 +25,7 @@ interface Branch {
     index: number;
 }
 
-class SVGCreator {
+class GitBranch {
     pointSize: number = 28;
     strokeWith: number = 3;
     height: number = 0;
@@ -50,7 +50,6 @@ class SVGCreator {
         }
         
         this.init();
-        this.createSchoolPath();
         this.createWorkPath();
     }
     
@@ -108,35 +107,20 @@ class SVGCreator {
         // M Put your pen and L draw towards this point
         pathWork.setAttribute("d", `M ${this.widthStroke / 2} 10 L ${this.widthStroke / 2} ${this.height}`);
         pathWork.setAttribute("stroke-width", this.widthStroke.toString());
+        pathWork.setAttribute("stroke", "#266BFF");
+        pathWork.setAttribute("fill", "#FFFFFF");
         svgPath.appendChild(pathWork);
     }
-    
-    private createSchoolPath = () => {
+
+    private createSchoolPath = (posX: number, posY: number, commitsNumber: number) => {
         const svgPath = document.querySelector(`.${this.classSvg}`);
-//         const idClip = "cut-off-bottom";
-//         const clip = document.createElementNS("http://www.w3.org/2000/svg", "clipPath");;
-//         clip.setAttribute("id", idClip);
-//         svgPath.appendChild(clip);
-        
-//         const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");;
-//         // Set visible part
-//         rect.setAttribute("x", "250");
-//         rect.setAttribute("y", "0");
-//         rect.setAttribute("height", "250");
-//         rect.setAttribute("width", "500");
-//         clip.appendChild(rect);
-        
-        const rectrect = document.createElementNS("http://www.w3.org/2000/svg", "rect");;
-        rectrect.setAttribute("x", "-190");
-        rectrect.setAttribute("y", "70");
-        rectrect.setAttribute("width", "260");
-        rectrect.setAttribute("height", "300");
-        rectrect.setAttribute("rx", "40");
-        rectrect.setAttribute("stroke", "#E89D42");
-        rectrect.setAttribute("stroke-width", this.widthStroke.toString());
-        rectrect.setAttribute("fill", "#FFF");
-        // rectrect.setAttribute("clip-path", `url(#${idClip})`);
-        svgPath.appendChild(rectrect);
+        let pathWork = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        // M Put your pen and L draw towards this point
+        pathWork.setAttribute("d", `M${posX},${posY + this.sizePoint / 2} h${25 - this.sizePoint / 2} a20,20 0 0 1 20,20 v${this.distance * commitsNumber - this.sizePoint}`);
+        pathWork.setAttribute("stroke-width", this.widthStroke.toString());
+        pathWork.setAttribute("stroke", "#E89D42");
+        pathWork.setAttribute("fill", "#FFFFFF");
+        svgPath.appendChild(pathWork);
     }
     
     private uuidv4() {
@@ -156,39 +140,42 @@ class SVGCreator {
     }
 
     createBranch = () => {
-        
+        this.branchDistance.map((posY, index) => {
+            const posX = 30 * index;
+            this.createSchoolPath(posX, posY.position, posY.commitsNumber);
+        })
     }
     
+    branchDistance: {position: number, commitsNumber: number}[] = [];
+    distance: number = 0;
+    sizePoint: number = 28;
     createCommit = () => {  
         const array = this.branchs.map(x => x.commits.length);
         let total = 0;
         array.forEach(x => total = total + x);
-        const distance = this.height / total;
+        this.distance = this.height / total;
         let distanceTotal = 0;
         let index = 0;
-        let branchDistance: number[] = [];
         this.branchs.forEach((branch, indexBranch) => {
-            branchDistance.push(distanceTotal);
+            if(indexBranch !== 0) this.branchDistance.push({position: distanceTotal, commitsNumber: branch.commits.length});
             branch.commits.forEach((commit, indexCommit) => {
                 let isActive = false;
                 let indexToMultiply = 0;
-                indexToMultiply = index * distance;
+                indexToMultiply = index * this.distance;
                 distanceTotal = indexToMultiply;
-                console.log(indexToMultiply)
                 let exp = document.createElement("div");
+                exp.setAttribute("title", commit.name);
                 exp.setAttribute("class", `curry__point ${index === this.indexActiveSection ? "curry__point--active" : ""}`);
-                exp.setAttribute("style", `top:${indexToMultiply}px;left:${30 * indexBranch}px`);
+                exp.setAttribute("style", `top:${indexToMultiply}px;left:${30 * indexBranch}px; width:${this.sizePoint}px; height:${this.sizePoint}px`);
                 this.curve.appendChild(exp);
                 index++;
             })
             
         })
-
-        console.log(branchDistance);
     }
 }
 
-let originM = new SVGCreator(document.querySelector(".example"),  {width: 500, height: 500, widthStroke: 2});
+let originM = new GitBranch(document.querySelector(".example"),  {width: 500, height: 500, widthStroke: 2});
 
 const master = originM.branch("master", {color: "red"});
 master.commit("name");
@@ -196,9 +183,13 @@ master.commit("Hello");
 
 const school = originM.branch("school", {color: "blue"});
 school.commit("nouvelle");
+school.commit("nouvelle");
 
 const experience = originM.branch("experience", {color: "blue"});
 experience.commit("nouvelle");
+experience.commit("nouvelle");
 
-school.merge(master.name, "Merge");
+const cons = originM.branch("cons", {color: "blue"});
+cons.commit("nouvelle");
+
 originM.push();
